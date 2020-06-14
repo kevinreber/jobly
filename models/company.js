@@ -49,12 +49,12 @@ class Company {
 
     /** get a company by their 'handle' */
     static async get(handle) {
-        const result = await db.query(
+        const companyResult = await db.query(
             `
             SELECT handle, name, num_employees, description, logo_url FROM companies WHERE handle = $1 `,
             [handle]);
 
-        const company = result.rows[0];
+        const company = companyResult.rows[0];
 
         // verify company exists
         if (!company) {
@@ -62,6 +62,16 @@ class Company {
             No such company '${handle}'
             `, 404);
         }
+
+        // get job list of company
+        const jobResults = await db.query(
+            `SELECT id, title, salary, equity
+                FROM jobs
+                WHERE company_handle = $1`,
+            [handle]
+        );
+
+        company.jobs = jobResults.rows;
 
         return company;
     }
