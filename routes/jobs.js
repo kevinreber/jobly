@@ -5,10 +5,13 @@ const express = require("express");
 /** local dependencies */
 const ExpressError = require("../helpers/expressError");
 const Job = require("../models/job");
-// const jsonschema = require("jsonschema");
+const jsonschema = require("jsonschema");
 
 /** Get job schemas we need */
-// !
+const {
+    jobNewSchema,
+    jobUpdateSchema
+} = require('../schemas');
 
 const router = new express.Router();
 
@@ -37,8 +40,13 @@ router.get("/", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
     try {
-        const job = await Job.create(req.body);
+        /** Validate JSON schema */
+        const validate = jsonschema.validate(req.body, jobNewSchema);
+        if (!validate.valid) {
+            throw new ExpressError(validate.errors.map(e => e.stack), 400);
+        }
 
+        const job = await Job.create(req.body);
         return res.status(201).json({
             job
         });
@@ -69,6 +77,12 @@ router.patch("/:id", async (req, res, next) => {
     try {
         if ("id" in req.body) {
             throw new ExpressError("You are not allowed to change the job id.", 404);
+        }
+
+        /** Validate JSON schema */
+        const validate = jsonschema.validate(req.body, jobUpdateSchema);
+        if (!validate.valid) {
+            throw new ExpressError(validate.errors.map(e => e.stack), 400);
         }
 
         const job = await Job.update(req.params.id, req.body);
