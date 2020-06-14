@@ -4,8 +4,14 @@ const express = require("express");
 
 /** local dependencies */
 const ExpressError = require("../helpers/expressError");
-const partialUpdate = require("../helpers/partialUpdate");
 const Company = require("../models/company");
+const jsonschema = require("jsonschema");
+
+/** Get company schemas we need */
+const {
+    companyNewSchema,
+    companyUpdateSchema
+} = require("../schemas");
 
 const router = new express.Router();
 
@@ -34,6 +40,12 @@ router.get("/", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
     try {
+        /** Validate JSON schema */
+        const validate = jsonschema.validate(req.body, companyNewSchema);
+        if (!validate.valid) {
+            throw new ExpressError(validate.errors.map(e => e.stack), 400);
+        }
+
         const company = await Company.create(req.body);
         return res.status(201).json({
             company
@@ -69,6 +81,12 @@ router.patch("/:handle", async (req, res, next) => {
         /** user is not allowed to change handle */
         if ('handle' in req.body) {
             throw new ExpressError('You are not allowed to change the handle.', 404);
+        }
+
+        /** Validate JSON schema */
+        const validate = jsonschema.validate(req.body, companyUpdateSchema);
+        if (!validate.valid) {
+            throw new ExpressError(validate.errors.map(e => e.stack), 400);
         }
 
         const company = await Company.update(req.params.handle, req.body);
