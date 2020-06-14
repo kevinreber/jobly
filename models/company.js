@@ -87,7 +87,9 @@ class Company {
 
         const result = await db.query(
             `
-            INSERT INTO companies(handle, name, num_employees, description, logo_url) VALUES($1, $2, $3, $4, $5) RETURNING handle, name, num_employees, description, logo_url `,
+            INSERT INTO companies(handle, name, num_employees, description, logo_url) 
+                VALUES($1, $2, $3, $4, $5) 
+                RETURNING handle, name, num_employees, description, logo_url `,
             [
                 data.handle,
                 data.name,
