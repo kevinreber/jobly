@@ -26,7 +26,7 @@ const router = new express.Router();
  */
 router.get("/", async (req, res, next) => {
     try {
-        const companies = await Company.getAll();
+        const companies = await Company.getAll(req.query);
         return res.json({
             companies
         });
