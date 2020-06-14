@@ -6,6 +6,7 @@ const ExpressError = require("./helpers/expressError");
 
 // Import routes
 const companiesRoutes = require("./routes/companies");
+const jobsRoutes = require("./routes/jobs");
 
 const morgan = require("morgan");
 
@@ -19,6 +20,7 @@ app.use(morgan("tiny"));
 
 // Build routes
 app.use("/companies", companiesRoutes);
+app.use("/jobs", jobsRoutes);
 
 /** 404 handler */
 
