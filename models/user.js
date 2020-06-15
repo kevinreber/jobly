@@ -92,7 +92,7 @@ class User {
                 WHERE username=$1`,
             [username]);
 
-        const user = results.row[0];
+        const user = results.rows[0];
 
         if (!user) {
             throw new ExpressError(`Username does not exist: ${username}`, 404)
