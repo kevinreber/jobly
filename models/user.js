@@ -66,8 +66,8 @@ class User {
             [
                 data.username,
                 hashedPassword,
-                data.firstName,
-                data.lastName,
+                data.first_name,
+                data.last_name,
                 data.email,
                 data.photo_url
             ]);
