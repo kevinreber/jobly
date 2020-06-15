@@ -5,9 +5,10 @@ const express = require("express");
 /** local dependencies */
 const ExpressError = require("../helpers/expressError");
 const User = require("../models/user");
-const jsonschema = require("jsonschema");
+const createToken = require("../helpers/createToken");
 
 /** Get user schemas we need */
+const jsonschema = require("jsonschema");
 const {
     userNewSchema,
     userUpdateSchema
@@ -29,8 +30,8 @@ router.get("/", async (req, res, next) => {
     }
 })
 
-/** POST / - Register a new user and return the newly register user. 
- * res = {user: userData}
+/** POST / - Register a new user and return token of newly registered user. 
+ * res = {token: userData}
  */
 router.post("/", async (req, res, next) => {
     try {
@@ -40,9 +41,12 @@ router.post("/", async (req, res, next) => {
             throw new ExpressError(validate.errors.map(e => e.stack), 400);
         }
 
-        const user = await User.register(req.body);
+        const newUser = await User.register(req.body);
+
+        // create token for new user
+        const token = createToken(newUser);
         return res.status(201).json({
-            user
+            token
         });
 
     } catch (err) {
