@@ -7,6 +7,12 @@ const ExpressError = require("../helpers/expressError");
 const Company = require("../models/company");
 const jsonschema = require("jsonschema");
 
+/** middleware */
+const {
+    authRequired,
+    adminRequired
+} = require("../middleware/auth");
+
 /** Get company schemas we need */
 const {
     companyNewSchema,
@@ -24,7 +30,7 @@ const router = new express.Router();
  * 
  * res = {company: [companyData, ..., ...] }
  */
-router.get("/", async (req, res, next) => {
+router.get("/", authRequired, async (req, res, next) => {
     try {
         const companies = await Company.getAll(req.query);
         return res.json({
@@ -38,7 +44,7 @@ router.get("/", async (req, res, next) => {
 /** POST / - Create a new company and return the newly created company. 
  * res = {company: companyData}
  */
-router.post("/", async (req, res, next) => {
+router.post("/", adminRequired, async (req, res, next) => {
     try {
         /** Validate JSON schema */
         const validate = jsonschema.validate(req.body, companyNewSchema);
@@ -60,7 +66,7 @@ router.post("/", async (req, res, next) => {
 /** GET /[handle] - Return a single company founded by it's [handle].
  * res = {company: companyData}
  */
-router.get("/:handle", async (req, res, next) => {
+router.get("/:handle", authRequired, async (req, res, next) => {
     try {
         const company = await Company.get(req.params.handle);
         return res.json({
@@ -76,7 +82,7 @@ router.get("/:handle", async (req, res, next) => {
 /** PATCH /[handle] - Update an existing company and return the updated company.
  * res = {company: companyData}
  */
-router.patch("/:handle", async (req, res, next) => {
+router.patch("/:handle", adminRequired, async (req, res, next) => {
     try {
         /** user is not allowed to change handle */
         if ('handle' in req.body) {
@@ -101,7 +107,7 @@ router.patch("/:handle", async (req, res, next) => {
 /** DELETE /[handle] - Remove an existing company and return a message.
  * res = {message: "Company deleted"}
  */
-router.delete("/:handle", async (req, res, next) => {
+router.delete("/:handle", adminRequired, async (req, res, next) => {
     try {
         await Company.remove(req.params.handle);
         return res.json({

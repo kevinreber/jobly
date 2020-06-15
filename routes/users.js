@@ -7,6 +7,12 @@ const ExpressError = require("../helpers/expressError");
 const User = require("../models/user");
 const createToken = require("../helpers/createToken");
 
+/** middleware */
+const {
+    authRequired,
+    ensureCorrectUser
+} = require("../middleware/auth");
+
 /** Get user schemas we need */
 const jsonschema = require("jsonschema");
 const {
@@ -19,7 +25,7 @@ const router = new express.Router();
 /** GET / - Return handle and name for all users.
  * res = {user: [user, ..., ...] }
  */
-router.get("/", async (req, res, next) => {
+router.get("/", authRequired, async (req, res, next) => {
     try {
         const users = await User.getAll(req.query);
         return res.json({
@@ -57,8 +63,10 @@ router.post("/", async (req, res, next) => {
 /** GET /[username] - Return a single user founded by it's [username].
  * res = {user: userData}
  */
-router.get("/:username", async (req, res, next) => {
+router.get("/:username", authRequired, async (req, res, next) => {
     try {
+        console.log(req.params.username);
+
         const user = await User.get(req.params.username);
         return res.json({
             user
@@ -71,7 +79,7 @@ router.get("/:username", async (req, res, next) => {
 /** PATCH /[username] - Update an existing user and return the updated user.
  * res = {user: userData}
  */
-router.patch("/:username", async (req, res, next) => {
+router.patch("/:username", ensureCorrectUser, async (req, res, next) => {
     try {
         if ("username" in req.body || "is_admin" in req.body) {
             throw new ExpressError("You are not allowed to change 'username' or 'is_admin' properties.", 400);
@@ -95,7 +103,7 @@ router.patch("/:username", async (req, res, next) => {
 /** DELETE /[username] - Remove an existing user and return a message.
  * res = {message: "Company deleted"}
  */
-router.delete("/:username", async (req, res, next) => {
+router.delete("/:username", ensureCorrectUser, async (req, res, next) => {
     try {
         await User.remove(req.params.username);
         return res.json({

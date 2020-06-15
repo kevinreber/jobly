@@ -7,6 +7,12 @@ const ExpressError = require("../helpers/expressError");
 const Job = require("../models/job");
 const jsonschema = require("jsonschema");
 
+/** middleware */
+const {
+    authRequired,
+    adminRequired
+} = require("../middleware/auth");
+
 /** Get job schemas we need */
 const {
     jobNewSchema,
@@ -24,7 +30,7 @@ const router = new express.Router();
  * 
  * res = {jobs: [job, ..., ...] }
  */
-router.get("/", async (req, res, next) => {
+router.get("/", authRequired, async (req, res, next) => {
     try {
         const jobs = await Job.getAll(req.query);
         return res.json({
@@ -38,7 +44,7 @@ router.get("/", async (req, res, next) => {
 /** POST / - Create a new job and return the newly created job. 
  * res = {job: jobData}
  */
-router.post("/", async (req, res, next) => {
+router.post("/", adminRequired, async (req, res, next) => {
     try {
         /** Validate JSON schema */
         const validate = jsonschema.validate(req.body, jobNewSchema);
@@ -59,7 +65,7 @@ router.post("/", async (req, res, next) => {
 /** GET /[id] - Return a single job founded by it's [id].
  * res = {job: jobData}
  */
-router.get("/:id", async (req, res, next) => {
+router.get("/:id", authRequired, async (req, res, next) => {
     try {
         const job = await Job.get(req.params.id);
         return res.json({
@@ -73,7 +79,7 @@ router.get("/:id", async (req, res, next) => {
 /** PATCH /[id] - Update an existing job and return the updated job.
  * res = {job: jobData}
  */
-router.patch("/:id", async (req, res, next) => {
+router.patch("/:id", adminRequired, async (req, res, next) => {
     try {
         if ("id" in req.body) {
             throw new ExpressError("You are not allowed to change the job id.", 404);
@@ -97,7 +103,7 @@ router.patch("/:id", async (req, res, next) => {
 /** DELETE /[id] - Remove an existing job and return a message.
  * res = {message: "Company deleted"}
  */
-router.delete("/:id", async (req, res, next) => {
+router.delete("/:id", adminRequired, async (req, res, next) => {
     try {
         await Job.remove(req.params.id);
         return res.json({
