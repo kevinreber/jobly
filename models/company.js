@@ -2,6 +2,8 @@
 
 /** connect to DB */
 const db = require("../db");
+
+/** local dependencies */
 const ExpressError = require("../helpers/expressError");
 const sqlForPartialUpdate = require("../helpers/partialUpdate");
 
